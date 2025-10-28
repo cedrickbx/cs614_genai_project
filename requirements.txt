@@ -1,0 +1,17 @@
+huggingface_hub[mcp]
+huggingface_hub
+python-dotenv
+mcp
+mcp[cli]
+fastmcp
+transformers
+langchain
+langchain-mcp-adapters
+langchain-huggingface
+langchain-ollama
+ollama
+langgraph
+langgraph-checkpoint
+langgraph-checkpoint-sqlite
+httpx
+trafilatura
