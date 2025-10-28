@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from typing import TypedDict, Any, Dict, List
 from langchain_core.messages import HumanMessage, AIMessage, AnyMessage
 from langchain_ollama import ChatOllama
+from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 from langgraph.graph import StateGraph, START, END
@@ -73,8 +74,18 @@ def _extract_json_or_text(s: Any) -> Dict[str, Any]:
     return {"query": s.splitlines()[0].strip()}
 
 async def build_once():
+    model_id = os.getenv("HF_MODEL_ID")
+    hf_token = os.getenv("HF_TOKEN")
+
+    endpoint = HuggingFaceEndpoint(repo_id=model_id, 
+                            huggingfacehub_api_token=hf_token,
+                            temperature=0.2,
+                            max_new_tokens= 128,
+                            task="conversational",
+                            )
+    model = ChatHuggingFace(llm=endpoint)
     # Fast local model; adjust as needed
-    model = ChatOllama(model="qwen3:4b", temperature=0.2)
+    # model = ChatOllama(model="qwen3:4b", temperature=0.2)
     mcp_servers = {
         "database": {
             "transport": "stdio",
