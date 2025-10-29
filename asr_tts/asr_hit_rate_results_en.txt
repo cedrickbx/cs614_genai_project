@@ -1,0 +1,153 @@
+=== ASR Batch Evaluation Results ===
+
+[1]
+Transcript: hello, i am feeling a little cold. can i eat panadol?
+Reference : hello i am feeling a little cold can i eat panadol
+Hit Rate  : 97.09%
+
+[2]
+Transcript: i have a short short what medicine should i take?
+Reference : i have a sore throat what medicine should i take
+Hit Rate  : 90.72%
+
+[3]
+Transcript: can i take anti-biotics without a prescription?
+Reference : can i take antibiotics without a prescription
+Hit Rate  : 97.83%
+
+[4]
+Transcript: what should i do if i have a fever?
+Reference : what should i do if i have a fever
+Hit Rate  : 98.55%
+
+[5]
+Transcript: how often should i take my blood pressure medication?
+Reference : how often should i take my blood pressure medication
+Hit Rate  : 99.05%
+
+[6]
+Transcript: can i exercise if i have a fever?
+Reference : can i exercise if i have a mild fever
+Hit Rate  : 91.43%
+
+[7]
+Transcript: is it safe to take parisatumol with ibuprofen?
+Reference : is it safe to take paracetamol with ibuprofen
+Hit Rate  : 92.31%
+
+[8]
+Transcript: i feel dizzy and weak should i go to the clinic
+Reference : i feel dizzy and weak should i go to the clinic
+Hit Rate  : 100.00%
+
+[9]
+Transcript: how many hours of sleep should i get when sick?
+Reference : how many hours of sleep should i get when sick
+Hit Rate  : 98.92%
+
+[10]
+Transcript: what food should i avoid after surgery?
+Reference : what food should i avoid after surgery
+Hit Rate  : 98.70%
+
+[11]
+Transcript: can i drink coffee after taking medicine?
+Reference : can i drink coffee after taking medicine
+Hit Rate  : 98.77%
+
+[12]
+Transcript: how long does it take for penadal to work?
+Reference : how long does it take for panadol to work
+Hit Rate  : 93.98%
+
+[13]
+Transcript: my nose is blocked what should i do?
+Reference : my nose is blocked what should i do
+Hit Rate  : 98.59%
+
+[14]
+Transcript: can i take vitamin c and zinc together?
+Reference : can i take vitamin c and zinc together
+Hit Rate  : 98.70%
+
+[15]
+Transcript: is it normal to have a headache after vaccination?
+Reference : is it normal to have a headache after vaccination
+Hit Rate  : 98.99%
+
+[16]
+Transcript: what should i do if my temperature is thirty eight degrees?
+Reference : what should i do if my temperature is thirty eight degrees
+Hit Rate  : 99.15%
+
+[17]
+Transcript: i have a stomach ache. should i visit a doctor?
+Reference : i have a stomach ache should i visit a doctor
+Hit Rate  : 97.83%
+
+[18]
+Transcript: can i take painkillers on an empty stomach?
+Reference : can i take painkillers on an empty stomach
+Hit Rate  : 98.82%
+
+[19]
+Transcript: is it safe to take cough syrup at night?
+Reference : is it safe to take cough syrup at night
+Hit Rate  : 98.73%
+
+[20]
+Transcript: what should i eat if i have diarrhea?
+Reference : what should i eat if i have diarrhea
+Hit Rate  : 98.63%
+
+[21]
+Transcript: can i take allergy pills every day?
+Reference : can i take allergy pills every day
+Hit Rate  : 98.55%
+
+[22]
+Transcript: is sore throat a symptom of flu?
+Reference : is sore throat a symptom of flu
+Hit Rate  : 98.41%
+
+[23]
+Transcript: can i go to work if i have a call?
+Reference : can i go to work if i have a cold
+Hit Rate  : 92.54%
+
+[24]
+Transcript: how many times can i take panadol in a day?
+Reference : how many times can i take panadol in a day
+Hit Rate  : 98.82%
+
+[25]
+Transcript: should i see a doctor for high blood pressure?
+Reference : should i see a doctor for high blood pressure
+Hit Rate  : 98.90%
+
+[26]
+Transcript: can i get a flu shot while having mal fever?
+Reference : can i get a flu shot while having mild fever
+Hit Rate  : 95.45%
+
+[27]
+Transcript: i have chest pain. what should i do?
+Reference : i have chest pain what should i do
+Hit Rate  : 97.14%
+
+[28]
+Transcript: can i take medicine with milk?
+Reference : can i take medicine with milk
+Hit Rate  : 98.31%
+
+[29]
+Transcript: is it normal to feel tired all the time?
+Reference : is it normal to feel tired all the time
+Hit Rate  : 98.73%
+
+[30]
+Transcript: what vitamins are good for the immune system?
+Reference : what vitamins are good for the immune system
+Hit Rate  : 98.88%
+
+Average ASR Hit Rate across 30 sentences: 97.42%

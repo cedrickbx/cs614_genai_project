@@ -1,0 +1,4 @@
+openai-whisper
+TTS
+sounddevice
+soundfile
