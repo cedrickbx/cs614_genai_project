@@ -203,7 +203,7 @@ async def build_once():
             # ---- schema guards for DB tools ----
             data = _extract_json_or_text(s)
             if getattr(_t, "name", "") == "table_query" and isinstance(data, dict):
-                data = _normalize_query_args(data)      # <- keep `where` as dict
+                data = _normalize_query_args(data)
             else:
                 data = _clean_tool_args(data)    
 
