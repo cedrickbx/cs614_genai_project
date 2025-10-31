@@ -145,14 +145,14 @@ def _normalize_query_args(payload: Dict[str, Any]) -> Dict[str, Any]:
     elif tbl == "medication":
         args.setdefault("order_by", ["updated_at"])
         if not args["where"]:
-            args["where"] = {"taken_at":{"op": ">=", "value":int(time.time()) - 24*3600}}
+            args["where"] = {"created_at":{"op": "<", "value":int(time.time())}}
         args.setdefault("limit", 50)
         # leave args["where"] as {} unless the model provided something
 
     elif tbl == "medical_history":
         args.setdefault("order_by", ["updated_at"])
         if not args["where"]:
-            args["where"] = {"taken_at":{"op": ">=", "value":int(time.time()) - 24*3600}}
+            args["where"] = {"created_at":{"op": "<", "value":int(time.time())}}
         args.setdefault("limit", 50)
 
     return args
