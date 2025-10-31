@@ -1,6 +1,3 @@
-# userdb.py
-# Minimal MCP server for a single-user health SQLite DB (local-only).
-# Run:  mcp dev health_db_mcp.py
 import asyncio
 import json
 import sqlite3
@@ -30,9 +27,9 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     CREATE TABLE IF NOT EXISTS medical_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       condition TEXT NOT NULL,
-      diagnosis_date TEXT,              -- ISO date like '2025-10-26' (optional)
-      severity TEXT,                    -- e.g., mild/moderate/severe
-      status TEXT,                      -- e.g., 'active', 'recovered', 'worsened (stage 2)'
+      diagnosis_date TEXT,
+      severity TEXT,
+      status TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
     )
@@ -42,11 +39,11 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     cur.execute("""
     CREATE TABLE IF NOT EXISTS medication (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,               -- medication name (e.g., 'doxycycline')
-      dosage TEXT,                      -- human-readable dose taken (e.g., '100 mg')
-      time_taken INTEGER,               -- unix ts when taken (optional for 'current' meds)
-      condition_id INTEGER,             -- FK to medical_history.id (nullable)
-      status TEXT,                      -- e.g., 'still taking', 'no longer taking'
+      name TEXT NOT NULL,
+      dosage TEXT,
+      time_taken INTEGER,
+      condition_id INTEGER,
+      status TEXT,
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL,
       FOREIGN KEY (condition_id) REFERENCES medical_history(id) ON DELETE SET NULL
@@ -57,9 +54,9 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     cur.execute("""
     CREATE TABLE IF NOT EXISTS food_24h (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,               -- food name
-      notes TEXT,                       -- free-form notes
-      taken_at INTEGER NOT NULL,        -- unix ts when consumed
+      name TEXT NOT NULL,
+      notes TEXT,
+      taken_at INTEGER NOT NULL,
       created_at INTEGER NOT NULL
     )
     """)
@@ -81,13 +78,11 @@ def _purge_expired(conn: sqlite3.Connection) -> None:
     day = 24 * 3600
     cur = conn.cursor()
 
-    # Delete recovered conditions older than 14 days since last update
     cur.execute("""
       DELETE FROM medical_history
       WHERE status LIKE 'recovered%' AND updated_at <= ?
     """, (now - two_weeks,))
 
-    # Delete food older than 24 hours
     cur.execute("""
       DELETE FROM food_24h
       WHERE taken_at < ?
@@ -100,7 +95,7 @@ async def lifespan(server: FastMCP):
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
     _init_schema(conn)
-    _purge_expired(conn)
+    _purge_expired(conn)  # purge once at startup only
     try:
         yield AppContext(conn=conn)
     finally:
@@ -117,7 +112,6 @@ def _as_json_rows(cur: sqlite3.Cursor, limit: Optional[int] = None) -> List[Dict
     return [dict(r) for r in rows]
 
 def _quote_ident(ident: str) -> str:
-    # Accepts letters, numbers, underscore only
     if not ident.replace("_", "").isalnum():
         raise ValueError(f"Invalid identifier: {ident!r}")
     return f'"{ident}"'
@@ -138,7 +132,6 @@ def _validate_columns(conn: sqlite3.Connection, table: str, cols: List[str]) -> 
         raise ValueError(f"Invalid column(s) for {table}: {bad}. Allowed: {sorted(allowed)}")
 
 def _build_where(where: Optional[Dict[str, Any]]) -> tuple[str, List[Any]]:
-    """Support simple filters and {col: {op: '>=', value: 123}} style operators."""
     if not where:
         return "", []
     clauses, params = [], []
@@ -164,10 +157,6 @@ def _build_where(where: Optional[Dict[str, Any]]) -> tuple[str, List[Any]]:
             params.append(val)
     return " WHERE " + " AND ".join(clauses), params
 
-def _touch_purge(conn: sqlite3.Connection) -> None:
-    # Light-touch purge each tool call to keep DB tidy
-    _purge_expired(conn)
-
 # -------------------------- Typed Results --------------------------
 
 class SelectResult(TypedDict):
@@ -183,16 +172,12 @@ class MutateResult(TypedDict):
 
 @mcp.resource("db://schema")
 def schema_root(ctx: Context) -> str:
-    """List tables available to the agent (single user; no user_id needed)."""
     conn = ctx.request_context.lifespan_context.conn
-    _touch_purge(conn)
     return json.dumps({"tables": list(ALLOWED_TABLES)}, indent=2)
 
 @mcp.resource("db://schema/{table}")
 def schema_table(table: str, ctx: Context) -> str:
-    """Describe a specific table (columns and basic info)."""
     conn = ctx.request_context.lifespan_context.conn
-    _touch_purge(conn)
     _ensure_allowed_table(table)
     cur = conn.execute(f"PRAGMA table_info({_quote_ident(table)})")
     return json.dumps({"table": table, "columns": _as_json_rows(cur)}, indent=2)
@@ -202,7 +187,6 @@ def schema_table(table: str, ctx: Context) -> str:
 @mcp.tool(description="Check tables and their attributes in the DB.")
 def check_schema(ctx: Context | None = None) -> Dict[str, Any]:
     conn = ctx.request_context.lifespan_context.conn  # type: ignore
-    _touch_purge(conn)
     out = {}
     for t in ALLOWED_TABLES:
         cur = conn.execute(f"PRAGMA table_info({_quote_ident(t)})")
@@ -220,14 +204,20 @@ def table_query(
     ctx: Context | None = None,
 ) -> SelectResult:
     conn = ctx.request_context.lifespan_context.conn  # type: ignore
-    _touch_purge(conn)
 
     _ensure_allowed_table(table)
+    
+    if where == {}:
+        where = None
+    if order_by == []:
+        order_by = None
+    if columns == []:
+        columns = None
+
     if columns:
         _validate_columns(conn, table, columns)
     cols_sql = ", ".join(_quote_ident(c) for c in columns) if columns else "*"
 
-    # Validate order_by
     if order_by:
         _validate_columns(conn, table, order_by)
     order_sql = " ORDER BY " + ", ".join(_quote_ident(c) for c in order_by) if order_by else ""
@@ -250,12 +240,10 @@ def table_insert(
     ctx: Context | None = None,
 ) -> MutateResult:
     conn = ctx.request_context.lifespan_context.conn  # type: ignore
-    _touch_purge(conn)
     _ensure_allowed_table(table)
     if not values:
         raise ValueError("values cannot be empty")
 
-    # Auto timestamps
     now = _now_ts()
     cols_available = _get_columns(conn, table)
     vals = dict(values)
@@ -282,12 +270,10 @@ def table_update(
     ctx: Context | None = None,
 ) -> MutateResult:
     conn = ctx.request_context.lifespan_context.conn  # type: ignore
-    _touch_purge(conn)
     _ensure_allowed_table(table)
     if not values:
         raise ValueError("values cannot be empty")
 
-    # Auto updated_at
     cols_available = _get_columns(conn, table)
     vals = dict(values)
     if "updated_at" in cols_available:
@@ -312,7 +298,6 @@ def table_delete(
     ctx: Context | None = None,
 ) -> MutateResult:
     conn = ctx.request_context.lifespan_context.conn  # type: ignore
-    _touch_purge(conn)
     _ensure_allowed_table(table)
     where_sql, params = _build_where(where)
     if not where_sql:
