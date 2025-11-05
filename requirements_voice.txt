@@ -1,0 +1,9 @@
+# Voice Features Requirements
+# Install with: pip install -r requirements_voice.txt
+
+# Free TTS (Microsoft Edge TTS)
+edge-tts>=6.1.9
+
+# That's it! ASR is handled by the browser (Web Speech API)
+# No additional backend dependencies needed for speech recognition
+

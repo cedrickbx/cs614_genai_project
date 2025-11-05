@@ -4,14 +4,35 @@ python-dotenv
 mcp
 mcp[cli]
 fastmcp
-transformers
-langchain
+# transformers
 langchain-mcp-adapters
 langchain-huggingface
 langchain-ollama
 ollama
-langgraph
-langgraph-checkpoint
-langgraph-checkpoint-sqlite
+# langgraph
+# langgraph-checkpoint
+# langgraph-checkpoint-sqlite
 httpx
 trafilatura
+
+# === LangChain stack (old stable) ===
+langchain==0.3.27
+langchain-core
+langchain-community
+
+# === Database & ORM ===
+sqlalchemy
+mysql-connector-python
+
+# === Model inference ===
+# sentence-transformers>=3.0.0
+
+# === ML / Utilities ===
+scikit-learn
+numpy>=2.1.0
+python-dotenv
+chromadb
+
+# === Optional local model support ===
+langchain_chroma
+aiosqlite
