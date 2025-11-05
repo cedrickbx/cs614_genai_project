@@ -9,9 +9,9 @@ langchain-mcp-adapters
 langchain-huggingface
 langchain-ollama
 ollama
-# langgraph
-# langgraph-checkpoint
-# langgraph-checkpoint-sqlite
+langgraph
+langgraph-checkpoint
+langgraph-checkpoint-sqlite
 httpx
 trafilatura
 
@@ -24,9 +24,6 @@ langchain-community
 sqlalchemy
 mysql-connector-python
 
-# === Model inference ===
-# sentence-transformers>=3.0.0
-
 # === ML / Utilities ===
 scikit-learn
 numpy>=2.1.0
@@ -36,3 +33,5 @@ chromadb
 # === Optional local model support ===
 langchain_chroma
 aiosqlite
+
+edge-tts>=6.1.9

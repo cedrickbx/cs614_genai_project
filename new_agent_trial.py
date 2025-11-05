@@ -44,10 +44,6 @@ TOOLS (exact argument shapes)
 - table_insert({ "table": string, "values": { "<col>": any, ... } })
 - table_update({ "table": string, "values": { ... }, "where": { ... } })   # WHERE required
 - table_delete({ "table": string, "where": { ... } })                      # WHERE required
-- food_drug_interaction({
-    "food": string,
-    "drug": string
-  }) → returns known food–drug interaction summary or "none" if no interaction found.
 - brave_web_search(query: string)
 - brave_local_search(query: string)
 - brave_video_search(query: string)
@@ -164,15 +160,15 @@ WEB SEARCH PRESENTATION RULES:
 - ALWAYS cite that the information came from web search (e.g., "According to recent sources..." or "Recent studies show...")
 - Place web search findings AFTER the database interaction results but BEFORE the warning disclaimer.
 - Example format:
-  ✅ I logged your **grapefruit** and **paclitaxel**...
+  I logged your **grapefruit** and **paclitaxel**...
   
   ---
   
-  ✅ **Found exact interaction:** [database result]
+  **Found exact interaction:** [database result]
   
-  📰 **Recent Studies:** A 2024 study found... [web search results]
+  **Recent Studies:** A 2024 study found... [web search results]
   
-  ⚠️ This summary is for informational purposes only...
+  This summary is for informational purposes only...
 
 FORMAT (ReAct controller only)
 Use Thought/Action/Action Input/Observation internally so tools are called correctly, but your final user message must NOT include those lines. End with a short, friendly answer or a clear set of follow-up questions. Keep a warm tone.
@@ -252,7 +248,6 @@ def _normalize_query_args(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     return args
 
-
 # ---------------------------------------------------------
 # Local extractor helper for main agent (LLM-based)
 # ---------------------------------------------------------
@@ -286,7 +281,7 @@ def extract_food_drug_node(state: dict) -> dict:
         food = parsed.get("food", "unknown").strip().lower()
         drug = parsed.get("drug", "unknown").strip().lower()
     except Exception as e:
-        print(f"⚠️ LLM extraction failed: {e}. Response: {response}")
+        print(f"LLM extraction failed: {e}. Response: {response}")
         food, drug = "unknown", "unknown"
 
     return {**state, "food": food, "drug": drug}
@@ -314,11 +309,6 @@ async def build_once():
             "args": ["-y", "@brave/brave-search-mcp-server", "--transport", "stdio"],
             "env": {"BRAVE_API_KEY": os.getenv("BRAVE_API_KEY", "")},
         },
-        # "fooddrug": {
-        #     "transport": "stdio",
-        #     "command": "python",
-        #     "args": ["server.py"]
-        # },
     }
 
     # 3) Create the client (no context manager here)
@@ -327,7 +317,7 @@ async def build_once():
     # 4) Load *all* tools now (will start each server once to fetch metadata)
     print("🔧 Initializing MCP servers...")
     tools = await client.get_tools()
-    print(f"✅ Loaded {len(tools)} tools from MCP servers.")
+    print(f"Loaded {len(tools)} tools from MCP servers.")
 
     wrapped: List[Tool] = []
     for t in tools:
@@ -374,7 +364,7 @@ async def build_once():
                 handle_tool_errors=True,
             )
         )
-    print(f"🧰 Final wrapped tools: {[t.name for t in wrapped]}")
+    print(f"Final wrapped tools: {[t.name for t in wrapped]}")
     agent = create_react_agent(model, wrapped, prompt=prompt_with_time)
 
     # ------------------------------
@@ -404,22 +394,22 @@ async def build_once():
         food = result_state.get("food")
         drug = result_state.get("drug")
 
-        print("🧩 [DEBUG] Extraction result state:", result_state)
-        print(f"🔍 [DEBUG] Parsed entities → food='{food}', drug='{drug}'\n")
+        print("[DEBUG] Extraction result state:", result_state)
+        print(f"[DEBUG] Parsed entities → food='{food}', drug='{drug}'\n")
 
         if food == "unknown" and drug == "unknown":
-            print(f"⚠️ No valid food–drug pair detected → ending process. (food={food}, drug={drug})")
+            print(f"No valid food–drug pair detected → ending process. (food={food}, drug={drug})")
             return "terminate"
 
         if food == "unknown" or drug == "unknown":
             missing = "food" if food == "unknown" else "drug"
-            print(f"⚠️ Only one entity found ({missing} missing) → ending process.")
+            print(f"Only one entity found ({missing} missing) → ending process.")
             return "terminate"
 
-        print(f"✅ Detected valid pair → food='{food}', drug='{drug}'")
+        print(f"Detected valid pair → food='{food}', drug='{drug}'")
 
         structured_query = f"How is the interaction between food {food} and drug {drug}?"
-        print(f"✅ Reformatted for sub-agent: {structured_query}")
+        print(f"Reformatted for sub-agent: {structured_query}")
 
         state["messages"].append(HumanMessage(content=structured_query))
         return "food_drug_agent"
@@ -450,10 +440,10 @@ async def build_once():
         },
     )
 
-    # 3️⃣ Merge both branches back together
+    # Merge both branches back together
     workflow.add_edge("food_drug_agent", "merge_node")
 
-    # 4️⃣ Entry & exit points
+    # Entry & exit points
     workflow.set_entry_point("main_agent")
     workflow.add_edge("merge_node", END)
 
