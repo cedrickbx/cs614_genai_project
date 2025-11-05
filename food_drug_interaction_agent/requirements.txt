@@ -1,0 +1,26 @@
+# === LangChain stack (old stable) ===
+langchain==0.3.27
+langchain-core
+langchain-huggingface
+langchain-community
+# langgraph
+
+# === Database & ORM ===
+sqlalchemy
+mysql-connector-python
+
+# === Model inference ===
+transformers
+torch
+sentence-transformers
+
+# === ML / Utilities ===
+scikit-learn
+numpy
+python-dotenv
+chromadb
+
+# === Optional local model support ===
+langchain_ollama
+langchain_chroma
+langchain_mcp
