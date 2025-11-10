@@ -18,12 +18,12 @@ DB_PASSWORD = os.getenv("MYSQL_PASSWORD")
 # Retrieve password securely
 DB_PASSWORD = os.getenv("MYSQL_PASSWORD")
 if not DB_PASSWORD:
-    raise ValueError("❌ MYSQL_PASSWORD not set in .env file. Please add it to your .env.")
+    raise ValueError("MYSQL_PASSWORD not set in .env file. Please add it to your .env.")
 
-# ✅ URL-encode the password to handle '@', '#', etc.
+# URL-encode the password to handle '@', '#', etc.
 DB_PASSWORD_ENCODED = quote_plus(DB_PASSWORD)
 
-# ✅ Build SQLAlchemy connection string
+# Build SQLAlchemy connection string
 DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD_ENCODED}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 # --- Vector Store Configuration ---

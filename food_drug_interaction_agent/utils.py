@@ -17,23 +17,19 @@ def _create_llm():
         # # Use ChatOllama for tool/function calling support
         llm = ChatOllama(
             model=model_name,
-            temperature=0,  # Low temp for more consistent tool calling
+            temperature=0,  
             num_ctx=12000,      # bigger context window
             num_predict=1500,   # allow long answers
         )
    
         # Test the connection and model
         response = llm.invoke("Hello")
-        print(f"✅ LLM loaded successfully: {model_name}")
-        print(f"   Test response: {response.content[:50]}...")
+        print(f"LLM loaded successfully: {model_name}")
+        print(f"Test response: {response.content[:50]}...")
         return llm
     
     except Exception as e:
-        print(f"❌ Error loading LLM from Ollama: {e}")
-        print(f"Please make sure Ollama is running and you have pulled the model.")
-        print(f"Install the model with: ollama pull {model_name}")
-        print(f"\nIf you're getting 'No module named langchain_ollama', install it with:")
-        print(f"  pip install langchain-ollama")
+        print(f"Error loading LLM from Ollama: {e}")
         sys.exit(1)
 
 def _create_embedding_model():
@@ -47,20 +43,18 @@ def _create_embedding_model():
     try:
         embeddings = OllamaEmbeddings(
             model="nomic-embed-text",
-            # num_predict=512,  # Optional: limit output tokens
         )
         
         # Test the embedding model
         test_text = "test embedding"
         test_embedding = embeddings.embed_query(test_text)
-        print(f"✅ Embedding model loaded successfully")
+        print(f"Embedding model loaded successfully")
         print(f"   Model: nomic-embed-text (Ollama)")
         print(f"   Backend: Ollama (no PyTorch required)")
         print(f"   Embedding dimension: {len(test_embedding)}")
-        print(f"   ✅ Works on any Python version (3.10+)")
         return embeddings
     except Exception as e:
-        print(f"\n❌ ERROR: Failed to load Ollama embeddings: {e}")
+        print(f"\nERROR: Failed to load Ollama embeddings: {e}")
         print(f"\n   Please ensure:")
         print(f"   1. Ollama is installed and running")
         print(f"   2. The model is available: ollama pull nomic-embed-text")
@@ -95,29 +89,25 @@ def _create_vector_store():
             embedding_function=embedding_model # Use the model we already loaded
         )
         count = vector_store._collection.count()
-        print(f"✅ Vector store loaded successfully")
-        print(f"   Collection: {config.COLLECTION_NAME}")
-        print(f"   Items in store: {count}")
+        print(f"Vector store loaded successfully")
+        print(f"Collection: {config.COLLECTION_NAME}")
+        print(f"Items in store: {count}")
         return vector_store
     except (OSError, ImportError) as e:
-        # Handle architecture mismatch or missing chromadb dependencies
         error_str = str(e)
         if "incompatible architecture" in error_str or "chromadb" in error_str.lower():
-            print(f"⚠️  Warning: ChromaDB has architecture mismatch: {error_str[:150]}...")
-            print("   Vector search features will be unavailable.")
-            print("   To fix: Reinstall chromadb for x86_64 architecture or use ARM64 Python.")
+            print(f"Warning: ChromaDB has architecture mismatch: {error_str[:150]}...")
+            print("Vector search features will be unavailable.")
+            print("To fix: Reinstall chromadb for x86_64 architecture or use ARM64 Python.")
             return None
         raise
     except Exception as e:
         print(f"Error loading vector store: {e}")
-        print("🚨 IMPORTANT: Did you run the `build_index.py` script first?")
+        print("IMPORTANT: Did you run the `build_index.py` script first?")
         print("   Vector search features will be unavailable.")
-        return None  # Return None instead of sys.exit() to allow graceful degradation
-
-# These are loaded once when the first import happens
-print("\n" + "="*60)
+        return None  
+    
 print("Initializing Food-Drug Interaction Agent Components")
-print("="*60 + "\n")
 
 llm = _create_llm()
 print()
@@ -130,6 +120,4 @@ vector_store = _create_vector_store() if embedding_model is not None else None
 if vector_store:
     print()
 
-print("="*60)
-print("✅ All components initialized successfully!")
-print("="*60 + "\n")
+print("All components initialized successfully!")
