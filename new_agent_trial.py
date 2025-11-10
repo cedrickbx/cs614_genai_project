@@ -11,7 +11,6 @@ from langchain_huggingface import HuggingFaceEndpoint, ChatHuggingFace
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.prebuilt import create_react_agent
 from langgraph.graph import StateGraph, START, END
-# from langgraph.checkpoint.memory import InMemorySaver
 from langchain_core.tools import Tool
 from fdagent_wrapper import food_drug_agent_node
 from langchain_core.messages import HumanMessage
@@ -139,7 +138,7 @@ Example 3 — “I ate chicken pasta and took 50mg of paclitaxel today at noon�
   Thought: Both food and drug are logged. Now I will check their possible interaction.
   Action 3: food_drug_interaction
   Action Input: {"food":"chicken pasta","drug":"paclitaxel"}
-  Observation: "⚠️ No exact match found, but similar interactions suggest increased risk when co-administered."
+  Observation: "No exact match found, but similar interactions suggest increased risk when co-administered."
 
   Thought: The local agent did not find a confident match, so I will verify with web search for the latest clinical or scientific references.
   Action 4: brave_news_search
@@ -156,7 +155,7 @@ Example 4 — "What are recent studies on grapefruit and paclitaxel?"
 
 WEB SEARCH PRESENTATION RULES:
 - When you call brave_web_search, brave_news_search, or any web search tool, you MUST include the findings in your final response.
-- Format web search results as: "📰 **Recent Studies/News:**\n[summarize key findings from the search]"
+- Format web search results as: "**Recent Studies/News:**\n[summarize key findings from the search]"
 - ALWAYS cite that the information came from web search (e.g., "According to recent sources..." or "Recent studies show...")
 - Place web search findings AFTER the database interaction results but BEFORE the warning disclaimer.
 - Example format:
@@ -248,9 +247,7 @@ def _normalize_query_args(payload: Dict[str, Any]) -> Dict[str, Any]:
 
     return args
 
-# ---------------------------------------------------------
-# Local extractor helper for main agent (LLM-based)
-# ---------------------------------------------------------
+# Local extractor helper for main agent 
 def extract_food_drug_node(state: dict) -> dict:
     """
     Uses the qwen:8b model (utils.llm) to extract FOOD and DRUG entities
@@ -273,7 +270,7 @@ def extract_food_drug_node(state: dict) -> dict:
     Text: "{user_input}"
     """
 
-    print("🔍 Extracting food & drug using LLM...")
+    print("Extracting food & drug using LLM...")
     response = utils.llm.invoke(prompt)
 
     try:
@@ -314,10 +311,8 @@ async def build_once():
     # 3) Create the client (no context manager here)
     client = MultiServerMCPClient(mcp_servers)
 
-    # 4) Load *all* tools now (will start each server once to fetch metadata)
-    print("🔧 Initializing MCP servers...")
+    # 4) Load all tools from the MCP client
     tools = await client.get_tools()
-    print(f"Loaded {len(tools)} tools from MCP servers.")
 
     wrapped: List[Tool] = []
     for t in tools:
@@ -367,9 +362,7 @@ async def build_once():
     print(f"Final wrapped tools: {[t.name for t in wrapped]}")
     agent = create_react_agent(model, wrapped, prompt=prompt_with_time)
 
-    # ------------------------------
-    # CONDITIONAL ROUTER (FINAL FIX)
-    # ------------------------------
+    # CONDITIONAL ROUTER
     async def decide_next_step(state: AgentState) -> str:
         """Decide whether to call the Food–Drug Interaction agent or end."""
 
@@ -382,12 +375,12 @@ async def build_once():
                     break
 
         if not user_msg:
-            print("⚠️ No user message found → terminating.")
+            print("No user message found → terminating.")
             return "terminate"
 
-        print(f"\n🧠 [DEBUG] Latest HumanMessage extracted for entity detection:\n{user_msg}\n")
+        print(f"\n[DEBUG] Latest HumanMessage extracted for entity detection:\n{user_msg}\n")
 
-        print("🔍 Checking for possible food–drug mention in query...")
+        print("Checking for possible food–drug mention in query...")
 
         # Use local helper for extraction
         result_state = extract_food_drug_node({"input": user_msg})
@@ -428,15 +421,15 @@ async def build_once():
     # Add all nodes
     workflow.add_node("main_agent", main_agent)
     workflow.add_node("food_drug_agent", food_drug_agent_node)
-    workflow.add_node("merge_node", lambda state: state)  # simple passthrough merger
+    workflow.add_node("merge_node", lambda state: state)  
 
     # Add conditional branch logic
     workflow.add_conditional_edges(
         "main_agent",
         decide_next_step,
         {
-            "food_drug_agent": "food_drug_agent",  # branch 2
-            "terminate": "merge_node",             # branch 1 ends here if no food–drug
+            "food_drug_agent": "food_drug_agent",  
+            "terminate": "merge_node",             
         },
     )
 
@@ -447,7 +440,6 @@ async def build_once():
     workflow.set_entry_point("main_agent")
     workflow.add_edge("merge_node", END)
 
-    # graph = workflow.compile(checkpointer=InMemorySaver())
     conn = await aiosqlite.connect("agent_memory.sqlite3")
     checkpointer = AsyncSqliteSaver(conn)
     graph = workflow.compile(checkpointer=checkpointer)

@@ -1,15 +1,9 @@
-import sys
+from agent_setup import agent
 
 def main():
     print("\n--- Food–Drug Interaction Agent is Ready ---")
     print("Type 'exit' to quit.")
     
-    # Now test the agent
-    print("\n" + "="*70)
-    print("🤖 TESTING AGENT")
-    print("="*70)
-    
-    from agent_setup import agent
     
     # --- Test Case 1 ---
     query1 = "How is the interaction between food grapefruit and drug paclitaxel"
@@ -21,7 +15,7 @@ def main():
         
         # Debug: Print the raw response
         print("\n" + "="*70)
-        print("🔍 DEBUG: Raw Response")
+        print("DEBUG: Raw Response")
         print("="*70)
         print(f"Type: {type(response1)}")
         print(f"Content: {response1}")
@@ -35,12 +29,12 @@ def main():
         output1 = response1.get("final_answer", "No answer generated")
         
         print("\n" + "="*70)
-        print("✅ [Test 1] Final Answer:")
+        print("[Test 1] Final Answer:")
         print("="*70)
         print(output1)
         
     except Exception as e:
-        print(f"\n❌ Agent invocation failed: {e}")
+        print(f"\nAgent invocation failed: {e}")
         import traceback
         traceback.print_exc()
         return

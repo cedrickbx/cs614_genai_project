@@ -4,7 +4,6 @@ python-dotenv
 mcp
 mcp[cli]
 fastmcp
-# transformers
 langchain-mcp-adapters
 langchain-huggingface
 langchain-ollama

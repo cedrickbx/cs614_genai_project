@@ -1,7 +1,6 @@
 import sys
 import chromadb
 from sqlalchemy.sql import text
-# This imports the models/DB from your existing utils
 import utils 
 import config
 
@@ -9,7 +8,7 @@ import config
 BATCH_SIZE = 1000 # Process 1000 records at a time
 
 def main():
-    print("--- 🚀 Starting Vector Index Build ---")
+    print("--- Starting Vector Index Build ---")
 
     # --- Step 1: Connect to ChromaDB ---
     try:
@@ -89,12 +88,11 @@ def main():
     except Exception as e:
         print(f"An error occurred during indexing: {e}")
 
-    print("\n--- ✅ Vector Index Build Complete ---")
+    print("\n--- Vector Index Build Complete ---")
     print(f"Data is stored in: {config.CHROMA_PATH}")
     print(f"Total items in collection: {collection.count()}")
 
 if __name__ == "__main__":
-    # We must import utils first to load the models
     try:
         if not utils.embedding_model:
              raise Exception("Embedding model not loaded.")
