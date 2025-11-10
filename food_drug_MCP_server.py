@@ -31,13 +31,13 @@ async def get_graph():
 async def food_drug_interaction(food: str, drug: str) -> str:
     """Analyze potential interactions between a given food and drug."""
     query = f"How is the interaction between food {food} and drug {drug}?"
-    print(f"🧠 Running food–drug agent for query: {query}")
+    print(f"Running food–drug agent for query: {query}")
 
     graph = await get_graph()
 
     # Pass the right state
     result = await graph.ainvoke({"messages": [HumanMessage(content=query)]})
-    print("🧾 RAW FOOD–DRUG OUTPUT:\n", result)
+    print("RAW FOOD–DRUG OUTPUT:\n", result)
 
     # Extract meaningful output
     if isinstance(result, dict):
