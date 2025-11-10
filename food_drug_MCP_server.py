@@ -35,11 +35,11 @@ async def food_drug_interaction(food: str, drug: str) -> str:
 
     graph = await get_graph()
 
-    # ✅ Pass the right state
+    # Pass the right state
     result = await graph.ainvoke({"messages": [HumanMessage(content=query)]})
     print("🧾 RAW FOOD–DRUG OUTPUT:\n", result)
 
-    # ✅ Extract meaningful output
+    # Extract meaningful output
     if isinstance(result, dict):
         for k in ("final_answer", "exact_result", "similar_result"):
             if k in result and isinstance(result[k], str):
@@ -49,7 +49,7 @@ async def food_drug_interaction(food: str, drug: str) -> str:
                 if hasattr(m, "content") and isinstance(m.content, str):
                     return m.content
 
-    return "⚠️ No interaction found or unable to determine."
+    return "No interaction found or unable to determine."
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")

@@ -1,12 +1,6 @@
-"""
-Voice Service - Free TTS using Microsoft Edge TTS
-No API keys required, unlimited usage, high quality voices
-Compatible with Python 3.13+
-"""
 import edge_tts
 import asyncio
 import os
-import tempfile
 from typing import Optional, Dict
 from pathlib import Path
 
@@ -109,7 +103,7 @@ class VoiceService:
             with open(output_path, 'wb') as f:
                 f.write(audio_bytes)
             
-            print(f"✅ Audio saved: {output_path}")
+            print(f"Audio saved: {output_path}")
             
             return {
                 "success": True,
@@ -118,7 +112,7 @@ class VoiceService:
             }
             
         except Exception as e:
-            print(f"❌ TTS error: {e}")
+            print(f"TTS error: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -147,10 +141,10 @@ class VoiceService:
             Result dictionary with audio bytes
         """
         try:
-            print(f"🎵 Synthesizing: {text[:50]}...")
+            print(f"Synthesizing: {text[:50]}...")
             audio_bytes = await self.text_to_speech_async(text)
             
-            print(f"✅ Audio generated ({len(audio_bytes)} bytes)")
+            print(f"Audio generated ({len(audio_bytes)} bytes)")
             
             return {
                 "success": True,
@@ -159,7 +153,7 @@ class VoiceService:
             }
             
         except Exception as e:
-            print(f"❌ TTS error: {e}")
+            print(f"TTS error: {e}")
             return {
                 "success": False,
                 "error": str(e),

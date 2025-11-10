@@ -6,9 +6,7 @@ from food_drug_interaction_agent import tools as agent_tools
 from food_drug_interaction_agent import utils
 import json
 
-# ======================================================
-# 1️⃣ Define Agent State
-# ======================================================
+# 1. Define Agent State
 class AgentState(TypedDict):
     input: str
     food: str
@@ -18,17 +16,15 @@ class AgentState(TypedDict):
     final_answer: str
 
 
-# ======================================================
-# 2️⃣ Extract (food, drug)
-# ======================================================
+# 2. Extract (food, drug)
 def extract_food_drug_node(state: AgentState) -> AgentState:
     """
     Uses the LLM (llama3.1:8b) to extract the food and drug names from user input.
     If already provided by parent, reuse those values.
     """
-    # ✅ If values already exist from parent agent, skip extraction
+    # If values already exist from parent agent, skip extraction
     if state.get("food") not in (None, "", "unknown") and state.get("drug") not in (None, "", "unknown"):
-        print(f"✅ Using pre-detected food/drug from parent: {state['food']} + {state['drug']}")
+        print(f"Using pre-detected food/drug from parent: {state['food']} + {state['drug']}")
         return state
 
     user_input = state.get("input", "")
@@ -54,15 +50,13 @@ def extract_food_drug_node(state: AgentState) -> AgentState:
         food = parsed.get("food", "unknown").strip().lower()
         drug = parsed.get("drug", "unknown").strip().lower()
     except Exception as e:
-        print(f"⚠️ LLM extraction failed: {e}. Response: {response}")
+        print(f"LLM extraction failed: {e}. Response: {response}")
         food, drug = "unknown", "unknown"
 
     return {**state, "food": food, "drug": drug}
 
 
-# ======================================================
-# 3️⃣ Exact Match Tool
-# ======================================================
+# 3. Exact Match Tool
 def find_exact_interaction_node(state: AgentState) -> AgentState:
     """Call the exact interaction tool."""
     food, drug = state["food"], state["drug"]
@@ -74,9 +68,7 @@ def find_exact_interaction_node(state: AgentState) -> AgentState:
     return {**state, "exact_result": result}
 
 
-# ======================================================
-# 4️⃣ Similarity Search Tool
-# ======================================================
+# 4. Similarity Search Tool
 def find_similar_interaction_node(state: AgentState) -> AgentState:
     """Call the similar interaction tool."""
     food, drug = state["food"], state["drug"]
@@ -85,20 +77,16 @@ def find_similar_interaction_node(state: AgentState) -> AgentState:
     return {**state, "similar_result": result}
 
 
-# ======================================================
-# 5️⃣ Decision Logic
-# ======================================================
+# 5. Decision Logic
 def decide_next(state: AgentState) -> str:
     """Decide whether to use exact result or search for similar."""
     exact_result = state["exact_result"]
-    if "✅ Found exact interaction" in exact_result:
+    if "Found exact interaction" in exact_result:
         return "final_answer"
     return "similar_search"
 
 
-# ======================================================
-# 6️⃣ Final Summarization & Output
-# ======================================================
+# 6. Final Summarization & Output
 def generate_final_answer(state: AgentState) -> AgentState:
     """
     Generate a summarized, user-friendly final answer:
@@ -109,12 +97,10 @@ def generate_final_answer(state: AgentState) -> AgentState:
     similar_result = state.get("similar_result", "")
     food, drug = state["food"], state["drug"]
 
-    # =====================================================
     # CASE 1 — Exact Interaction Found
-    # =====================================================
-    if "✅ Found exact interaction" in exact_result:
-        raw_text = exact_result.replace("✅ Found exact interaction:", "").strip()
-        print(f"🧠 Summarizing exact interaction for {food} + {drug}...")
+    if "Found exact interaction" in exact_result:
+        raw_text = exact_result.replace("Found exact interaction:", "").strip()
+        print(f"Summarizing exact interaction for {food} + {drug}...")
 
         prompt = f"""
         You are a biomedical assistant.
@@ -139,26 +125,21 @@ def generate_final_answer(state: AgentState) -> AgentState:
             summary = utils.llm.invoke(prompt)
             summary_text = summary.content.strip()
             final_answer = (
-                f"✅ **Found exact interaction between '{food}' and '{drug}':**\n\n"
+                f"**Found exact interaction between '{food}' and '{drug}':**\n\n"
                 f"{summary_text}\n\n"
-                "⚠️ This summary is for informational purposes only. Always consult your doctor."
+                "This summary is for informational purposes only. Always consult your doctor."
             )
-            print("✅ Exact interaction summarized successfully.")
+            print("Exact interaction summarized successfully.")
         except Exception as e:
-            print(f"⚠️ Summarization failed: {e}")
-            final_answer = f"✅ Found exact interaction:\n\n{raw_text[:600]}..."
+            print(f"Summarization failed: {e}")
+            final_answer = f"Found exact interaction:\n\n{raw_text[:600]}..."
 
-    # =====================================================
     # CASE 2 — No Exact Match → Similar Matches
-    # =====================================================
     else:
-        if not similar_result or "❌ An error occurred" in similar_result or "--- Result" not in similar_result:
-            final_answer = f"⚠️ No interaction information found between '{food}' and '{drug}'."
+        if not similar_result or "An error occurred" in similar_result or "--- Result" not in similar_result:
+            final_answer = f"No interaction information found between '{food}' and '{drug}'."
         else:
             print(f"🧠 Summarizing top 3 similar pairs for {food} + {drug}...")
-
-            # if len(similar_result) > 20000:
-            #     similar_result = similar_result[:20000] + "...[truncated]"
 
             prompt = f"""
             You are a biomedical assistant analyzing food–drug similarity search results.
@@ -189,21 +170,19 @@ def generate_final_answer(state: AgentState) -> AgentState:
                 summary = utils.llm.invoke(prompt)
                 summary_text = summary.content.strip()
                 final_answer = (
-                    f"⚠️ No exact match found for '{food}' and '{drug}'.\n\n"
+                    f"No exact match found for '{food}' and '{drug}'.\n\n"
                     f"{summary_text}\n\n"
-                    "⚠️ This summary is for informational purposes only. Always consult your doctor."
+                    "This summary is for informational purposes only. Always consult your doctor."
                 )
-                print("✅ Similar interaction summaries generated.")
+                print("Similar interaction summaries generated.")
             except Exception as e:
-                print(f"⚠️ Summarization failed: {e}")
+                print(f"Summarization failed: {e}")
                 final_answer = similar_result
 
     return {**state, "final_answer": final_answer}
 
 
-# ======================================================
-# 7️⃣ Build the LangGraph Agent
-# ======================================================
+# 7. Build the LangGraph Agent
 def create_agent_graph():
     """Create and return the Food–Drug Interaction agent graph."""
     workflow = StateGraph(AgentState)
@@ -233,6 +212,6 @@ def create_agent_graph():
 
 
 # ======================================================
-# 8️⃣ Instantiate Agent
+# 8. Instantiate Agent
 # ======================================================
 agent = create_agent_graph()
