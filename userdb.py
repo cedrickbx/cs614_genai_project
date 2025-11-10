@@ -5,12 +5,11 @@ import time
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Literal, TypedDict
+from mcp.server.fastmcp import FastMCP, Context
 
-from mcp.server.fastmcp import FastMCP, Context  # official MCP SDK
+DB_PATH = "health.db" #userDB
 
-DB_PATH = "health.db"
-
-# -------------------------- Lifespan & Schema --------------------------
+# ============= Define DB schema =============
 
 @dataclass
 class AppContext:
@@ -22,7 +21,7 @@ def _now_ts() -> int:
 def _init_schema(conn: sqlite3.Connection) -> None:
     cur = conn.cursor()
 
-    # 1) Medical history (single user; auto-delete recovered > 14 days)
+    # Medical history table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS medical_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -35,7 +34,7 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     )
     """)
 
-    # 2) Medication (ties to a condition via FK when applicable)
+    # Medication table
     cur.execute("""
     CREATE TABLE IF NOT EXISTS medication (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -50,7 +49,7 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     )
     """)
 
-    # 3) Food taken in the past 24 hours (ephemeral)
+    # Food log table (past 24 hours)
     cur.execute("""
     CREATE TABLE IF NOT EXISTS food_24h (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,7 +60,7 @@ def _init_schema(conn: sqlite3.Connection) -> None:
     )
     """)
 
-    # Helpful indexes
+    # Table indexes
     cur.execute("CREATE INDEX IF NOT EXISTS idx_med_hist_status ON medical_history(status)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_med_time_taken ON medication(time_taken)")
     cur.execute("CREATE INDEX IF NOT EXISTS idx_food_taken_at ON food_24h(taken_at)")
@@ -70,7 +69,7 @@ def _init_schema(conn: sqlite3.Connection) -> None:
 
 def _purge_expired(conn: sqlite3.Connection) -> None:
     """Enforce retention rules:
-       - medical_history rows with status like 'recovered%' kept 14 days after last update
+       - medical_history rows with status LIKE 'recovered%' kept 14 days after last update
        - food_24h rows kept only for last 24h
     """
     now = _now_ts()
@@ -90,6 +89,7 @@ def _purge_expired(conn: sqlite3.Connection) -> None:
 
     conn.commit()
 
+# # ============= Define DB lifespan =============
 @asynccontextmanager
 async def lifespan(server: FastMCP):
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
@@ -103,7 +103,7 @@ async def lifespan(server: FastMCP):
 
 mcp = FastMCP("Health DB MCP", lifespan=lifespan)
 
-# -------------------------- Helpers --------------------------
+# ============= Helpers functions to prevent error during execution =============
 
 ALLOWED_TABLES = ("medical_history", "medication", "food_24h")
 
@@ -157,8 +157,6 @@ def _build_where(where: Optional[Dict[str, Any]]) -> tuple[str, List[Any]]:
             params.append(val)
     return " WHERE " + " AND ".join(clauses), params
 
-# -------------------------- Typed Results --------------------------
-
 class SelectResult(TypedDict):
     rows: List[Dict[str, Any]]
     rowCount: int
@@ -168,7 +166,7 @@ class MutateResult(TypedDict):
     rowCount: int
     lastRowId: Optional[int]
 
-# -------------------------- MCP Resources --------------------------
+# ============= MCP Resources exposed to agent =============
 
 @mcp.resource("db://schema")
 def schema_root(ctx: Context) -> str:
@@ -182,11 +180,11 @@ def schema_table(table: str, ctx: Context) -> str:
     cur = conn.execute(f"PRAGMA table_info({_quote_ident(table)})")
     return json.dumps({"table": table, "columns": _as_json_rows(cur)}, indent=2)
 
-# -------------------------- MCP Tools --------------------------
+# ============= MCP Tools for agent =============
 
 @mcp.tool(description="Check tables and their attributes in the DB.")
 def check_schema(ctx: Context | None = None) -> Dict[str, Any]:
-    conn = ctx.request_context.lifespan_context.conn  # type: ignore
+    conn = ctx.request_context.lifespan_context.conn
     out = {}
     for t in ALLOWED_TABLES:
         cur = conn.execute(f"PRAGMA table_info({_quote_ident(t)})")
@@ -203,7 +201,7 @@ def table_query(
     offset: int = 0,
     ctx: Context | None = None,
 ) -> SelectResult:
-    conn = ctx.request_context.lifespan_context.conn  # type: ignore
+    conn = ctx.request_context.lifespan_context.conn
 
     _ensure_allowed_table(table)
     
@@ -239,7 +237,7 @@ def table_insert(
     values: Dict[str, Any],
     ctx: Context | None = None,
 ) -> MutateResult:
-    conn = ctx.request_context.lifespan_context.conn  # type: ignore
+    conn = ctx.request_context.lifespan_context.conn
     _ensure_allowed_table(table)
     if not values:
         raise ValueError("values cannot be empty")
@@ -269,7 +267,7 @@ def table_update(
     where: Dict[str, Any],
     ctx: Context | None = None,
 ) -> MutateResult:
-    conn = ctx.request_context.lifespan_context.conn  # type: ignore
+    conn = ctx.request_context.lifespan_context.conn
     _ensure_allowed_table(table)
     if not values:
         raise ValueError("values cannot be empty")
@@ -297,7 +295,7 @@ def table_delete(
     where: Dict[str, Any],
     ctx: Context | None = None,
 ) -> MutateResult:
-    conn = ctx.request_context.lifespan_context.conn  # type: ignore
+    conn = ctx.request_context.lifespan_context.conn
     _ensure_allowed_table(table)
     where_sql, params = _build_where(where)
     if not where_sql:
@@ -305,8 +303,6 @@ def table_delete(
     cur = conn.execute(f"DELETE FROM {_quote_ident(table)}{where_sql}", params)
     conn.commit()
     return {"rowCount": cur.rowcount, "lastRowId": None}
-
-# -------------------------- Entry --------------------------
 
 if __name__ == "__main__":
     mcp.run()
