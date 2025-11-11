@@ -1,7 +1,7 @@
 # ElderCare Copilot
 
 Conversational safety net that helps older adults (and the people who care for them) keep food, medicines, and daily habits in harmony. The project blends a LangGraph care agent, voice-first UX, and searchable clinical evidence into a single assistant you can run locally.
-
+![Chat interface](README/CHAT.jpeg)
 ---
 
 ## Built For Aging In Place
@@ -137,12 +137,13 @@ Whisper records and transcribes, a stub LLM response is generated (swap in the a
 
 ## Contributors:
 
--Dau Vu Dang Khoi: vdk.dau.2024@mitb.smu.edu.sg
--Koh Bo Xiang Cedric: cedric.koh.2024@mitb.smu.edu.sg
--Li Xinjie ✉: xinjie.li.2024@mitb.smu.edu.sg
--Tran Binh Minh: bm.tran.2024@mitb.smu.edu.sg
--Bryan Chang Tze Kin: tk.chang.2024@mitb.smu.edu.sg
-
+| Name                 | Email                          |
+|----------------------|--------------------------------|
+| Dau Vu Dang Khoi     | vdk.dau.2024@mitb.smu.edu.sg   |
+| Koh Bo Xiang Cedric  | cedric.koh.2024@mitb.smu.edu.sg|
+| Li Xinjie   ✉       | xinjie.li.2024@mitb.smu.edu.sg |
+| Tran Binh Minh       | bm.tran.2024@mitb.smu.edu.sg   |
+| Bryan Chang Tze Kin  | tk.chang.2024@mitb.smu.edu.sg  |
 
 
 
