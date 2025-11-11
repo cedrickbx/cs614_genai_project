@@ -1,8 +1,9 @@
 # ElderCare Copilot
 
 Conversational safety net that helps older adults (and the people who care for them) keep food, medicines, and daily habits in harmony. The project blends a LangGraph care agent, voice-first UX, and searchable clinical evidence into a single assistant you can run locally.
-![Chat interface](README/CHAT.jpeg)
+
 ---
+![Chat interface](README/chat.jpeg)
 
 ## Built For Aging In Place
 
