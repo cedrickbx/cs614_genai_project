@@ -73,7 +73,7 @@ uvicorn api_server:app --reload --port 8000
 
 When the server boots it will:
 
-- spin up the LangGraph agent (`new_agent_trial.py`)
+- spin up the LangGraph agent (`agent/new_agent_trial.py`)
 - attach MCP tools for the local SQLite care DB and Brave Search
 - expose REST endpoints for chat, TTS, health checks, and thread resets
 
@@ -104,8 +104,8 @@ Whisper records and transcribes, a stub LLM response is generated (swap in the a
 ## Key Modules
 
 - `api_server.py` · FastAPI layer, conversation endpoints, and Microsoft Edge TTS bridge.
-- `new_agent_trial.py` · LangGraph control loop that enforces medication logging, similarity search, and Brave news lookups.
-- `food_drug_interaction_agent/` · Vector search, SQL tool wrappers, and summarisation logic for exact/similar interactions.
+- `agent/` · LangGraph control loop, medication logging policies, vector search tools, and Brave news lookups.
+- `agent/food_drug_interaction/` · Vector search, SQL tool wrappers, and summarisation logic for exact/similar interactions.
 - `frontend/` · React app with Tailwind styling, speech recognition, and wellness-themed chat UI.
 - `asr_tts/` · Whisper-based ASR, Coqui TTS, and interaction logger for offline demos.
 - `evaluation/` + `model selection/` · Notebooks used to benchmark base models (Meditron, Qwen) for healthcare dialogue quality.
@@ -125,8 +125,8 @@ Whisper records and transcribes, a stub LLM response is generated (swap in the a
 
 ```text
 ├── api_server.py                # FastAPI entry point
+├── agent/                       # LangGraph agent, tooling, interaction workflows
 ├── frontend/                    # Vite + React client (allow voice via UI)
-├── food_drug_interaction_agent/ # LangGraph tools, vector search, index builder
 ├── asr_tts/                     # Local deployment of ASR/TTS (not used)
 ├── evaluation/                  # Agent evaluation scripts 
 ├── model selection/             # Jupyter notebooks for base model studies

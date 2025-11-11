@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+build/
+dist/
+
+# Environment
+.env
+.env*
+.env.*
+
+# Data and caches
+data/
+*.db
+*.gguf
+
+# Node (if any in future)
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
